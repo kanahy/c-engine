@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "cgltf.h": "c",
+        "ranges": "cpp"
+    }
+}

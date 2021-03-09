@@ -1,4 +1,3 @@
-
 PjAudio pj_audio_record(const PjAudioMain* audio) { // TODO: recording list (not buffer)
     PjAudio result = {
         .buffer = 0

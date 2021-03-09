@@ -5,8 +5,13 @@ out vec4 frag_color;
 in vec2 tex_coord;
 in vec4 color;
 
-uniform sampler2D texture_diffuse;
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_diffuse2;
 
 void main() {
-    frag_color = texture(texture_diffuse, tex_coord) * color;
+    frag_color = mix(
+        texture(texture_diffuse1, tex_coord),
+        texture(texture_diffuse2, tex_coord),
+        0.75
+    ) * color;
 }

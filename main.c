@@ -1,28 +1,4 @@
 ////////////////////////////////////////
-// Project - mini engine.
-//
-//   Bla-bla-bla. Bla-bla and bla-bla.
-//   Oh, yes, bla-bla bla bla-bla-bla bla
-//   bla-bla.
-//   Ну вы поняли короче...
-//
-//   Это мой проект, тут будет хлам и точка! (пока не доведу хоть до какого-то ума)
-//
-// Copyright (C) 2020-2021 Kana (kanahy.akama@bk.ru)
-////////////////////////////////////////
-// Contacts:
-//   kanahy.akama@bk.ru
-//   +380978337319 (only telegram)
-//
-// Links:
-//   https://github.com/kanahy
-//
-// Skills:
-//   C/C++
-//   OpenAL
-//   OpenGL
-//   HTML/CSS/JS
-////////////////////////////////////////
 // Debug:
 //   gcc main.c -std=c18 -Wall -Wconversion -lpthread -lglfw -lOpenGL -lopenal -ldl -lm -g -o main
 //
@@ -50,34 +26,47 @@
 // О, музончик подъехал:
 //   https://www.youtube.com/watch?v=XFbbBm7K2LQ
 //   https://www.youtube.com/watch?v=xr8ltGKiEmw
+//
+// Anime:
+//   https://youtu.be/mtvdM-YMUJ4?t=5871
 ////////////////////////////////////////
-#include "system.h"
-#include "graphics_opengl.h"
-#include "audio.h"
+#include "c-engine.h"
 
 
 int main(int argc, char** argv) {
     GLFWwindow* window = window_create_opengl();
     camera_t camera = camera_initialize_2d();
-    GLuint program = program_create_from_files("data/gui/shader.vs", NULL, "data/gui/shader.fs");
-    GLuint diffuse = texture_create("data/gui/diffuse.png");
-    GLsizei indices_count = 0;
-    GLuint mesh = mesh_create(NULL, &indices_count);
-    mat4 transform = GLM_MAT4_IDENTITY_INIT;
 
-    glm_scale(
-        transform,
-        (vec3) {
-            to_pixels(texture_get_width(&diffuse), 1920.0f),
-            to_pixels(texture_get_height(&diffuse), 1080.0f),
-            0.5f * to_pixels(texture_get_width(&diffuse), 1920.0f) / to_pixels(texture_get_height(&diffuse), 1080.0f)
-        }
+    audio_device_t audio_device = audio_device_create();
+    audio_buffer_t buffer = audio_buffer_create("data/resources/test.mp3");
+    audio_source_t source = audio_source_create(&buffer);
+
+    const char* textures[] = {
+        "data/gui/diffuse.png",
+        "data/resources/test.gif"
+    };
+
+    object_t object = object_create(
+        "data/gui/shader.vs", NULL, "data/gui/shader.fs",
+        NULL,
+        textures, 2
     );
 
-    ALCcontext* audio_context = NULL;
-    ALCdevice* audio_device = audio_device_create(&audio_context);
-    ALuint buffer = audio_buffer_create("data/resources/test.mp3");
-    ALuint source = audio_source_create(&buffer);
+    {
+        int window_width = 0;
+        int window_height = 0;
+
+        glfwGetWindowSize(window, &window_width, &window_height);
+
+        // glm_scale(
+        //     object.matrix,
+        //     (vec3) {
+        //         to_pixels(texture_get_width(&object.textures[0]), window_width),
+        //         to_pixels(texture_get_height(&object.textures[0]), window_height),
+        //         1.0f
+        //     }
+        // );
+    }
 
     audio_source_play(&source);
 
@@ -87,10 +76,7 @@ int main(int argc, char** argv) {
 
         camera_update(&camera, window);
 
-        texture_bind(&diffuse);
-        program_use(&program, &camera, transform);
-
-        mesh_draw(&mesh, &indices_count);
+        object_draw(&object, &camera);
 
         program_unuse();
         texture_unbind();
@@ -99,13 +85,11 @@ int main(int argc, char** argv) {
         glfwPollEvents();
     }
 
-    mesh_destroy(&mesh, &indices_count);
-    texture_destroy(&diffuse);
-    program_destroy(&program);
+    object_destroy(&object);
 
     audio_source_destroy(&source);
     audio_buffer_destroy(&buffer);
-    audio_device_destroy(&audio_device, &audio_context);
+    audio_device_destroy(&audio_device);
 
     glfwTerminate();
 
